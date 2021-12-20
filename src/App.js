@@ -1,90 +1,47 @@
-import './App.css';
-import { useState, useEffect } from "react";
-import Web3 from 'web3';
-import React from "react"
-import erc721Abi from "./erc721Abi"
-import TokenList from "./components/TokenList";
+import React from 'react';
+// TODO : React Router DOM을 설치 후, import 구문을 이용하여 BrowserRouter, Route, Switch 컴포넌트를 불러옵니다.
+import { BrowserRouter, Route, Switch } from 'react-router-dom';
+import Main from './components/Main';
+import Auction from './components/Auction';
+import Create from './components/Create';
+import Collect from './components/Collect'
+import Bar from './Bar';
 
-function App() {
-  const [erc721list, setErc721list] = useState([]); 
-  const [newErc721addr, setNewErc721Addr] = useState();
-
-  const [web3, setWeb3] = useState();
-    useEffect(() => {
-        if (typeof window.ethereum !== "undefined") { // window.ethereum이 있다면
-            try {
-                const web = new Web3(window.ethereum);  // 새로운 web3 객체를 만든다
-                setWeb3(web);
-            } catch (err) {
-                console.log(err);
-            }
-        }
-    }, []);
-
-  const [account, setAccount] = useState('');
+const App = (props) => {
   
-  const connectWallet = async () => {
-    const accounts = await window.ethereum.request({
-        method: "eth_requestAccounts",
-         });
-
-    setAccount(accounts[0]);
-};
-
-const addNewErc721Token = async () => {
-  const tokenContract = await new web3.eth.Contract(
-      erc721Abi,
-      newErc721addr
-  );
-    const name = await tokenContract.methods.name().call();
-	  const symbol = await tokenContract.methods.symbol().call();
-	  const totalSupply = await tokenContract.methods.totalSupply().call();
-    const addr = newErc721addr;
-
-    let arr = [];
-		  for (let i = 1; i <= totalSupply; i++) {
-		      arr.push(i);
-		  }
-      for (let tokenId of arr) {
-        let tokenOwner = await tokenContract.methods
-            .ownerOf(tokenId)
-            .call();
-        if (String(tokenOwner).toLowerCase() === account) {
-            let tokenURI = await tokenContract.methods
-                .tokenURI(tokenId)
-                .call();
-            setErc721list((prevState) => {
-                return [...prevState, { name, symbol, tokenId, tokenURI, addr }];
-            });
-        }
-      }
-
-} 
 
   return (
-    <div className="App">
-            <button
-                className="metaConnect"
-                onClick={() => {
-                    connectWallet();
-                }}
-            >
-                connect to MetaMask
-            </button>
-        <div className="userInfo">주소: {account}</div>  
-        <div className="newErc721">
-        <input
-            type="text"
-            onChange={(e) => {
-                setNewErc721Addr(e.target.value);  
-                // 입력받을 때마다 newErc721addr 갱신
-            }}
-        ></input>
-        <button onClick={addNewErc721Token}>add new erc721</button>
-      </div>    
-      <TokenList web3={web3} account={account} erc721list={erc721list} />
-    </div>
-  );
-}
+    <BrowserRouter>
+      <div className="App">
+        <main>
+          {/* <Sidebar /> */}
+          {/* <section className="features"> */}
+          <Bar />
+          <Switch>
+            <Route exact path="/">
+              <Main />
+            </Route>
+            <Route path="/Collect">
+              <Collect />
+            </Route>
+            <Route path="/Auction">
+              <Auction />
+            </Route>
+            <Route path="/Create">
+              <Create />
+            </Route>
+          </Switch>
+          {/* <Route exact path="/"> */}
+          {/* </Route> */}
+          {/* TODO : 유어클래스를 참고해서, 테스트 케이스를 통과하세요.
+            TODO : React Router DOM 설치 후 BrowserRouter, Route의 주석을 해제하고 Swtich 컴포넌트를 적절하게 작성합니다. */}
+          {/* </section> */}
 
-export default App
+        </main>
+      </div>
+    </BrowserRouter>
+  );
+};
+
+// ! 아래 코드는 수정하지 않습니다.
+export default App;
